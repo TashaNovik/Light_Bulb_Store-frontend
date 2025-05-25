@@ -1,0 +1,139 @@
+services: 
+
+  product_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: product_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - product_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Database Migration Service
+  migrate-products:
+    build: 
+      context: ./product_service
+      dockerfile: Dockerfile
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@product_db:5432/product_db
+    volumes:
+      - ./product_service/app:/app/app
+      - ./product_service/migration:/app/migration
+    depends_on:
+      product_db:
+        condition: service_healthy
+    restart: "no"  # Запускается только один раз
+
+  # FastAPI Product Service
+  product-api:
+    build: 
+      context: ./product_service
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@product_db:5432/product_db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./product_service/app:/app/app
+      - ./product_service/migration:/app/migration
+    depends_on:
+      product_db:
+        condition: service_healthy
+      migrate-products:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      
+  order_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: order_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - order_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Database Migration Service for Orders
+  migrate-orders:
+    build: 
+      context: ./order_service
+      dockerfile: Dockerfile
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@order_db:5432/order_db
+    volumes:
+      - ./order_service/app:/app/app
+      - ./order_service/migration:/app/migration
+    depends_on:
+      order_db:
+        condition: service_healthy
+    restart: "no"  # Запускается только один раз
+
+  # FastAPI Order Service
+  order-api:
+    build: 
+      context: ./order_service
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@order_db:5432/order_db
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./order_service/app:/app/app
+      - ./order_service/migration:/app/migration
+    depends_on:
+      order_db:
+        condition: service_healthy
+      migrate-orders:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # React Frontend Application
+  client-app:
+    build:
+      context: ./client-app
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      product-api:
+        condition: service_healthy
+      order-api:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+
+volumes:
+  product_pgdata:
+  order_pgdata:
+
+networks:
+  default:
+    driver: bridge

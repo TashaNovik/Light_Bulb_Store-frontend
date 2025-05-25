@@ -1,0 +1,65 @@
+services: 
+
+  product_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: product_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - product_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Database Migration Service
+  migrate-products:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@product_db:5432/product_db
+    volumes:
+      - ./app:/app/app
+      - ./migration:/app/migration
+    depends_on:
+      product_db:
+        condition: service_healthy
+    restart: "no"  # Запускается только один раз
+
+  # FastAPI Product Service
+  product-api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@product_db:5432/product_db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./migration:/app/migration
+    depends_on:
+      product_db:
+        condition: service_healthy
+      migrate-products:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  product_pgdata:
+
+networks:
+  default:
+    driver: bridge

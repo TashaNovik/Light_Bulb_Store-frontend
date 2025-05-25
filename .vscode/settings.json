@@ -1,0 +1,39 @@
+{
+    "python.testing.pytestArgs": [
+        "product_service",
+        "order_service"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/.venv": true,
+        "**/node_modules": true
+    },
+    
+    "python.analysis.autoSearchPaths": true, // Helps with module resolution
+    "python.terminal.activateEnvironment": true, // Auto-activate venv in terminal
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter", // Or ruff, autopep8
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit" // Using ruff or isort
+        }
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/.venv": true
+    }
+}
