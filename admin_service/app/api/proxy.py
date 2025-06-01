@@ -1,5 +1,5 @@
 import httpx
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
 from sqlalchemy.orm import Session
 from ..core.config import settings
@@ -50,7 +50,7 @@ async def get_products(
     products = await make_service_request(
         "GET",
         settings.product_service_url,
-        "/products",
+        "/api/v1/products/",
         params=params
     )
     
@@ -76,7 +76,7 @@ async def get_product(
     product = await make_service_request(
         "GET",
         settings.product_service_url,
-        f"/products/{product_id}"
+        f"/api/v1/products/{product_id}"
     )
     
     await log_user_action(
@@ -102,7 +102,7 @@ async def create_product(
     product = await make_service_request(
         "POST",
         settings.product_service_url,
-        "/products",
+        "/api/v1/products/",
         json=product_data
     )
     
@@ -131,7 +131,7 @@ async def update_product(
     product = await make_service_request(
         "PUT",
         settings.product_service_url,
-        f"/products/{product_id}",
+        f"/api/v1/products/{product_id}",
         json=product_data
     )
     
@@ -159,7 +159,7 @@ async def delete_product(
     result = await make_service_request(
         "DELETE",
         settings.product_service_url,
-        f"/products/{product_id}"
+        f"/api/v1/products/{product_id}"
     )
     
     await log_user_action(
@@ -192,7 +192,7 @@ async def get_orders(
     orders = await make_service_request(
         "GET",
         settings.order_service_url,
-        "/orders",
+        "/api/v1/orders/",
         params=params
     )
     
@@ -218,7 +218,7 @@ async def get_order(
     order = await make_service_request(
         "GET",
         settings.order_service_url,
-        f"/orders/{order_id}"
+        f"/api/v1/orders/{order_id}"
     )
     
     await log_user_action(
@@ -245,7 +245,7 @@ async def update_order_status(
     order = await make_service_request(
         "PUT",
         settings.order_service_url,
-        f"/orders/{order_id}/status",
+        f"/api/v1/orders/{order_id}/status",
         json=status_data
     )
     
@@ -272,7 +272,7 @@ async def get_order_stats(
     stats = await make_service_request(
         "GET",
         settings.order_service_url,
-        "/orders/stats"
+        "/api/v1/orders/stats"
     )
     
     await log_user_action(
