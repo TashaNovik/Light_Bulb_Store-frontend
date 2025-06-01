@@ -190,7 +190,6 @@ const Header: React.FC<HeaderProps> = () => {
                 <Text>О магазине</Text>
               </HStack>
             </Button>
-
             <Button
               as={Link}
               to="/delivery"
@@ -214,7 +213,6 @@ const Header: React.FC<HeaderProps> = () => {
                 <Text>Доставка</Text>
               </HStack>
             </Button>
-
             <Button
               as={Link}
               to="/payment"
@@ -237,8 +235,7 @@ const Header: React.FC<HeaderProps> = () => {
                 />
                 <Text>Оплата</Text>
               </HStack>
-            </Button>
-
+            </Button>{" "}
             <Button
               as={Link}
               to="/manufacturer"
@@ -260,6 +257,29 @@ const Header: React.FC<HeaderProps> = () => {
                   mr="2"
                 />
                 <Text>Производители</Text>
+              </HStack>
+            </Button>
+            <Button
+              as={Link}
+              to="/admin"
+              variant={"outline"}
+              borderColor="transparent"
+              _hover={{
+                bg: "transparent",
+                color: "black",
+                borderColor: "gray.300",
+                borderRadius: "md",
+              }}
+            >
+              <HStack>
+                <Image
+                  src="/assets/icons/admin.svg"
+                  alt=""
+                  width="30px"
+                  height="30px"
+                  mr="2"
+                />
+                <Text>Админ панель</Text>
               </HStack>
             </Button>
           </HStack>

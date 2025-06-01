@@ -130,9 +130,70 @@ services:
     environment:
       - NODE_ENV=production
 
+  # Admin Database
+  admin_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: admin_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - admin_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Database Migration Service for Admin
+  migrate-admin:
+    build: 
+      context: ./admin_service
+      dockerfile: Dockerfile
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@admin_db:5432/admin_db
+    volumes:
+      - ./admin_service/app:/app/app
+      - ./admin_service/migration:/app/migration
+    depends_on:
+      admin_db:
+        condition: service_healthy
+    restart: "no"  # Запускается только один раз
+
+  # FastAPI Admin Service
+  admin-api:
+    build: 
+      context: ./admin_service
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@admin_db:5432/admin_db
+      PRODUCT_SERVICE_URL: http://product-api:8000
+      ORDER_SERVICE_URL: http://order-api:8000
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./admin_service/app:/app/app
+      - ./admin_service/migration:/app/migration
+    depends_on:
+      admin_db:
+        condition: service_healthy
+      migrate-admin:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
 volumes:
   product_pgdata:
   order_pgdata:
+  admin_pgdata:
 
 networks:
   default:
