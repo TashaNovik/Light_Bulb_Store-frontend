@@ -22,7 +22,14 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React dev servers
+    allow_origins=[
+        "http://localhost:3000",    # React dev server (Vite)
+        "http://localhost:5173",    # React dev server (alternative port)
+        "http://localhost:8002",    # Admin service
+        "http://admin-api:8000",    # Admin service (Docker internal)
+        "http://127.0.0.1:8001",    # Swagger UI access
+        "http://localhost:8001"     # Swagger UI access
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
