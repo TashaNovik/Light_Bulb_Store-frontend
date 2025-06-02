@@ -23,7 +23,13 @@ async def make_service_request(
         try:
             response = await client.request(method, url, **kwargs)
             response.raise_for_status()
-            return response.json()
+            
+            # Check if response has content before trying to parse JSON
+            if response.content:
+                return response.json()
+            else:
+                # For responses with no content (like DELETE 204), return empty dict
+                return {"status": "success", "message": "Operation completed successfully"}
         except httpx.HTTPStatusError as e:
             raise HTTPException(
                 status_code=e.response.status_code,
@@ -192,7 +198,7 @@ async def get_orders(
     orders = await make_service_request(
         "GET",
         settings.order_service_url,
-        "/api/v1/orders",
+        "/api/v1/orders/",
         params=params
     )
     
@@ -243,7 +249,7 @@ async def update_order_status(
 ):
     """Update order status."""
     order = await make_service_request(
-        "PUT",
+        "PATCH",
         settings.order_service_url,
         f"/api/v1/orders/{order_id}/status",
         json=status_data

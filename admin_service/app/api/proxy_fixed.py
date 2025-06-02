@@ -248,7 +248,7 @@ async def update_order_status(
 ):
     """Update order status."""
     order = await make_service_request(
-        "PUT",
+        "PATCH",
         settings.order_service_url,
         f"/api/v1/orders/{order_id}/status",
         json=status_data
