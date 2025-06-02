@@ -188,7 +188,8 @@ async def delete_user(
         )
     
     deleted_user = crud.admin_user.delete(db, user_id=user_id)
-      await log_user_action(
+    
+    await log_user_action(
         action="user_deleted",
         request=request,
         db=db,
@@ -197,7 +198,5 @@ async def delete_user(
         target_resource_id=str(user_id),
         details={"deleted_username": user.username, "deleted_email": user.email}
     )
-    
-    return {"message": "User deleted successfully"}
     
     return {"message": "User deleted successfully"}

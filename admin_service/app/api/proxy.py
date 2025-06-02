@@ -188,7 +188,8 @@ async def get_orders(
     params = {"skip": skip, "limit": limit}
     if status_filter:
         params["status"] = status_filter
-          orders = await make_service_request(
+    
+    orders = await make_service_request(
         "GET",
         settings.order_service_url,
         "/api/v1/orders",
@@ -213,7 +214,8 @@ async def get_order(
     db: Session = Depends(get_db),
     current_user: models.AdminUser = Depends(get_current_active_user)
 ):
-    """Get specific order."""    order = await make_service_request(
+    """Get specific order."""
+    order = await make_service_request(
         "GET",
         settings.order_service_url,
         f"/api/v1/orders/{order_id}"
@@ -239,7 +241,8 @@ async def update_order_status(
     db: Session = Depends(get_db),
     current_user: models.AdminUser = Depends(get_current_active_user)
 ):
-    """Update order status."""    order = await make_service_request(
+    """Update order status."""
+    order = await make_service_request(
         "PUT",
         settings.order_service_url,
         f"/api/v1/orders/{order_id}/status",
@@ -265,7 +268,8 @@ async def get_order_stats(
     db: Session = Depends(get_db),
     current_user: models.AdminUser = Depends(get_current_active_user)
 ):
-    """Get order statistics."""    stats = await make_service_request(
+    """Get order statistics."""
+    stats = await make_service_request(
         "GET",
         settings.order_service_url,
         "/api/v1/orders/stats"
