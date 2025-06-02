@@ -68,9 +68,21 @@ def get_orders(
         date_from=date_from,
         date_to=date_to
     )
-    
-    # Convert to summary format
+      # Convert to summary format
     return [schemas.OrderSummaryResponse.from_orm(order) for order in orders]
+
+
+@router.get("/stats")
+def get_order_statistics(db: Session = Depends(get_db)):
+    """Get order statistics for dashboard"""
+    try:
+        stats = crud.get_order_statistics(db)
+        return stats
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving order statistics: {str(e)}"
+        ) from e
 
 
 @router.get("/{order_id}", response_model=schemas.OrderResponse)

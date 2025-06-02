@@ -290,3 +290,29 @@ async def get_order_stats(
     )
     
     return stats
+
+
+@router.get("/orders/{order_id}/status-history")
+async def get_order_status_history(
+    order_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.AdminUser = Depends(get_current_active_user)
+):
+    """Get order status history."""
+    history = await make_service_request(
+        "GET",
+        settings.order_service_url,
+        f"/api/v1/orders/{order_id}/history"
+    )
+    
+    await log_user_action(
+        action="order_status_history_viewed",
+        request=request,
+        db=db,
+        user=current_user,
+        target_resource_type="Order",
+        target_resource_id=order_id
+    )
+    
+    return history
