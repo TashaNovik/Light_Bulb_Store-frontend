@@ -1,4 +1,6 @@
 # Light_Bulb_Store
+# Ссылка на Видеодемонстрацию сборки и запуска приложений, а также работы всех основных функций интернет-магазина
+https://drive.google.com/file/d/1vG25-gpOiX7963mDZa0DgUx1gsuHbSCH/view?usp=sharing
 # Ссылка на видеодемонстрацию админской части
 https://drive.google.com/file/d/1KxAIbPiGQrNbeS8JYDAVcn-DfU3_Lc2G/view?usp=sharing
 
