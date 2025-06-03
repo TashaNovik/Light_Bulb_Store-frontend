@@ -413,3 +413,33 @@ def get_all_reference_data(db: Session) -> dict:
         "delivery_methods": get_all_delivery_methods(db),
         "payment_methods": get_all_payment_methods(db)
     }
+
+
+def get_order_statistics(db: Session) -> dict:
+    """Get order statistics for dashboard"""
+    from sqlalchemy import func
+    
+    # Get total orders count
+    total_orders = db.query(func.count(models.Order.id)).scalar()
+    
+    # Get orders by status counts
+    status_counts = db.query(
+        models.OrderStatus.code,
+        func.count(models.Order.id).label('count')
+    ).join(
+        models.Order, models.OrderStatus.id == models.Order.status_id
+    ).group_by(models.OrderStatus.code).all()
+    
+    # Convert to dictionary
+    status_dict = {status_code: count for status_code, count in status_counts}
+    
+    return {
+        "total_orders": total_orders,
+        "pending_orders": status_dict.get("PENDING_PAYMENT", 0),
+        "processing_orders": status_dict.get("PROCESSING", 0), 
+        "shipped_orders": status_dict.get("SHIPPED", 0),
+        "delivered_orders": status_dict.get("DELIVERED", 0),
+        "cancelled_orders": status_dict.get("CANCELLED", 0),
+        "new_orders": status_dict.get("NEW", 0),
+        "status_breakdown": status_dict
+    }

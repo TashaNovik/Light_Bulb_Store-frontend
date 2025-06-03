@@ -390,3 +390,10 @@ class OrderSummaryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PaginatedOrdersResponse(BaseModel):
+    data: List[OrderSummaryResponse]
+    total: int
+    skip: int
+    limit: int

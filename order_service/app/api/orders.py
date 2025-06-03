@@ -48,29 +48,65 @@ def create_order(
         ) from e
 
 
-@router.get("/", response_model=List[schemas.OrderSummaryResponse])
+@router.get("/", response_model=schemas.PaginatedOrdersResponse)
 def get_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     search: Optional[str] = Query(None),
     status_id: Optional[UUID] = Query(None),
+    status: Optional[str] = Query(None),
     date_from: Optional[datetime] = Query(None),
     date_to: Optional[datetime] = Query(None),
     db: Session = Depends(get_db)
 ):
     """Get list of orders with filters and pagination"""
+    
+    # If status code is provided, resolve it to status_id
+    resolved_status_id = status_id
+    if status and not status_id:
+        status_obj = crud.get_order_status_by_code(db, status)
+        if status_obj:
+            resolved_status_id = status_obj.id
+    
     orders = crud.get_orders(
         db=db,
         skip=skip,
         limit=limit,
         search=search,
-        status_id=status_id,
+        status_id=resolved_status_id,
+        date_from=date_from,
+        date_to=date_to
+    )
+    
+    # Get total count for pagination
+    total_count = crud.get_orders_count(
+        db=db,
+        search=search,
+        status_id=resolved_status_id,
         date_from=date_from,
         date_to=date_to
     )
     
     # Convert to summary format
-    return [schemas.OrderSummaryResponse.from_orm(order) for order in orders]
+    return schemas.PaginatedOrdersResponse(
+        data=[schemas.OrderSummaryResponse.from_orm(order) for order in orders],
+        total=total_count,
+        skip=skip,
+        limit=limit
+    )
+
+
+@router.get("/stats")
+def get_order_statistics(db: Session = Depends(get_db)):
+    """Get order statistics for dashboard"""
+    try:
+        stats = crud.get_order_statistics(db)
+        return stats
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving order statistics: {str(e)}"
+        ) from e
 
 
 @router.get("/{order_id}", response_model=schemas.OrderResponse)

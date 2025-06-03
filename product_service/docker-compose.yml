@@ -46,9 +46,11 @@ services:
     volumes:
       - ./app:/app/app
       - ./migration:/app/migration
+      - assets_images:/usr/share/nginx/html/assets/images
     depends_on:
       product_db:
         condition: service_healthy
+    healthcheck:
       migrate-products:
         condition: service_completed_successfully
     healthcheck:
@@ -59,6 +61,7 @@ services:
 
 volumes:
   product_pgdata:
+  assets_images:
 
 networks:
   default:

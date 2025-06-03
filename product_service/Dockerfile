@@ -13,6 +13,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Setup upload directory and permissions
+RUN python scripts/setup_uploads.py
+
 # Expose port
 EXPOSE 8000
 
